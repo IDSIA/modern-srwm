@@ -1,0 +1,24 @@
+bigfish
+bossfight
+caveflyer
+chaser
+climber
+coinrun
+dodgeball
+fruitbot
+heist
+jumper
+leaper
+maze
+miner
+ninja
+plunder
+starpilot
+
+Memory extension:
+caveflyer
+dodgeball
+heist
+jumper
+maze
+miner

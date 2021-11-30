@@ -1,0 +1,68 @@
+python
+>>> envs = ["AdventureNoFrameskip-v4", "AirRaidNoFrameskip-v4", "AlienNoFrameskip-v4", "AmidarNoFrameskip-v4", "AssaultNoFrameskip-v4", "AsterixNoFrameskip-v4", "AsteroidsNoFrameskip-v4", "AtlantisNoFrameskip-v4", "BankHeistNoFrameskip-v4", "BattleZoneNoFrameskip-v4", "BeamRiderNoFrameskip-v4", "BerzerkNoFrameskip-v4", "BowlingNoFrameskip-v4", "BoxingNoFrameskip-v4", "BreakoutNoFrameskip-v4", "CarnivalNoFrameskip-v4", "CentipedeNoFrameskip-v4", "ChopperCommandNoFrameskip-v4", "CrazyClimberNoFrameskip-v4", "DemonAttackNoFrameskip-v4", "DoubleDunkNoFrameskip-v4", "ElevatorActionNoFrameskip-v4", "EnduroNoFrameskip-v4", "FishingDerbyNoFrameskip-v4", "FreewayNoFrameskip-v4", "FrostbiteNoFrameskip-v4", "GopherNoFrameskip-v4", "GravitarNoFrameskip-v4", "HeroNoFrameskip-v4", "IceHockeyNoFrameskip-v4", "JamesbondNoFrameskip-v4", "JourneyEscapeNoFrameskip-v4", "KangarooNoFrameskip-v4", "KrullNoFrameskip-v4", "KungFuMasterNoFrameskip-v4", "MontezumaRevengeNoFrameskip-v4", "MsPacmanNoFrameskip-v4", "NameThisGameNoFrameskip-v4", "PhoenixNoFrameskip-v4", "PitfallNoFrameskip-v4", "PongNoFrameskip-v4", "PooyanNoFrameskip-v4", "PrivateEyeNoFrameskip-v4", "QbertNoFrameskip-v4", "RiverraidNoFrameskip-v4", "RoadRunnerNoFrameskip-v4", "RobotankNoFrameskip-v4", "SeaquestNoFrameskip-v4", "SkiingNoFrameskip-v4", "SolarisNoFrameskip-v4", "SpaceInvadersNoFrameskip-v4", "StarGunnerNoFrameskip-v4", "TennisNoFrameskip-v4", "TimePilotNoFrameskip-v4", "TutankhamNoFrameskip-v4", "UpNDownNoFrameskip-v4", "VentureNoFrameskip-v4", "VideoPinballNoFrameskip-v4", "WizardOfWorNoFrameskip-v4", "YarsRevengeNoFrameskip-v4", "ZaxxonNoFrameskip-v4"]
+>>> for i in envs:
+...   print(f"{i}  {gym.make(i).action_space.n}")
+
+--------------------------------------------------
+
+AdventureNoFrameskip-v4  18
+AirRaidNoFrameskip-v4  6
+AlienNoFrameskip-v4  18
+AmidarNoFrameskip-v4  10
+AssaultNoFrameskip-v4  7
+AsterixNoFrameskip-v4  9
+AsteroidsNoFrameskip-v4  14
+AtlantisNoFrameskip-v4  4
+BankHeistNoFrameskip-v4  18
+BattleZoneNoFrameskip-v4  18
+BeamRiderNoFrameskip-v4  9
+BerzerkNoFrameskip-v4  18
+BowlingNoFrameskip-v4  6
+BoxingNoFrameskip-v4  18
+BreakoutNoFrameskip-v4  4
+CarnivalNoFrameskip-v4  6
+CentipedeNoFrameskip-v4  18
+ChopperCommandNoFrameskip-v4  18
+CrazyClimberNoFrameskip-v4  9
+DemonAttackNoFrameskip-v4  6
+DoubleDunkNoFrameskip-v4  18
+ElevatorActionNoFrameskip-v4  18
+EnduroNoFrameskip-v4  9
+FishingDerbyNoFrameskip-v4  18
+FreewayNoFrameskip-v4  3
+FrostbiteNoFrameskip-v4  18
+GopherNoFrameskip-v4  8
+GravitarNoFrameskip-v4  18
+HeroNoFrameskip-v4  18
+IceHockeyNoFrameskip-v4  18
+JamesbondNoFrameskip-v4  18
+JourneyEscapeNoFrameskip-v4  16
+KangarooNoFrameskip-v4  18
+KrullNoFrameskip-v4  18
+KungFuMasterNoFrameskip-v4  14
+MontezumaRevengeNoFrameskip-v4  18
+MsPacmanNoFrameskip-v4  9
+NameThisGameNoFrameskip-v4  6
+PhoenixNoFrameskip-v4  8
+PitfallNoFrameskip-v4  18
+PongNoFrameskip-v4  6
+PooyanNoFrameskip-v4  6
+PrivateEyeNoFrameskip-v4  18
+QbertNoFrameskip-v4  6
+RiverraidNoFrameskip-v4  18
+RoadRunnerNoFrameskip-v4  18
+RobotankNoFrameskip-v4  18
+SeaquestNoFrameskip-v4  18
+SkiingNoFrameskip-v4  3
+SolarisNoFrameskip-v4  18
+SpaceInvadersNoFrameskip-v4  6
+StarGunnerNoFrameskip-v4  18
+TennisNoFrameskip-v4  18
+TimePilotNoFrameskip-v4  10
+TutankhamNoFrameskip-v4  8
+UpNDownNoFrameskip-v4  6
+VentureNoFrameskip-v4  18
+VideoPinballNoFrameskip-v4  9
+WizardOfWorNoFrameskip-v4  10
+YarsRevengeNoFrameskip-v4  18
+ZaxxonNoFrameskip-v4  18
