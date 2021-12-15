@@ -2,7 +2,7 @@
 
 This is the official repository containing code for the paper:
 
-[A Modern Self-Referential Weight Matrix That Learns to Modify Itself](link) (link coming soon)
+[A Modern Self-Referential Weight Matrix That Learns to Modify Itself](https://openreview.net/forum?id=lVUGfLpNpCF)
 
 
 ## General instructions
