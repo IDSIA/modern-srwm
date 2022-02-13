@@ -1,0 +1,5 @@
+torch
+torchvision
+h5py
+ordered_set
+ninja
