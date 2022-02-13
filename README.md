@@ -2,21 +2,26 @@
 
 This is the official repository containing code for the paper:
 
-[A Modern Self-Referential Weight Matrix That Learns to Modify Itself](https://openreview.net/forum?id=lVUGfLpNpCF)
+A Modern Self-Referential Weight Matrix That Learns to Modify Itself (link coming soon)
 
+An earlier/shorter version of the paper (only containing the RL part) was presented at [NeurIPS 2021 Deep RL Workshop](https://sites.google.com/view/deep-rl-workshop-neurips2021). The corresponding version is available on [Openreview](https://openreview.net/forum?id=lVUGfLpNpCF).
 
 ## General instructions
-Please refer to the readme file under `reinforcement_learning` for further instructions.
+Please refer to the readme file under each directory for further instructions.
 
-A license file can be also found under the directory.
+License files can be found under the corresponding directories.
 
 In all tasks, our custom CUDA kernels will be automatically compiled.
 To avoid recompiling the code multiple times, we recommend to specify the path to a directory to store the compiled code via:
 ```
-export TORCH_EXTENSIONS_DIR="/home/me/torch_extensions/lm"
+export TORCH_EXTENSIONS_DIR="/home/me/torch_extensions/rl"
 ```
 
 ## BibTex
+
+Coming soon.
+
+For the workshop version:
 ```
 @inproceedings{irie2021modern,
       title={A Modern Self-Referential Weight Matrix That Learns to Modify Itself}, 
