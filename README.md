@@ -2,7 +2,7 @@
 
 This is the official repository containing code for the paper:
 
-A Modern Self-Referential Weight Matrix That Learns to Modify Itself (link coming soon)
+[A Modern Self-Referential Weight Matrix That Learns to Modify Itself](https://arxiv.org/abs/2202.05780)
 
 An earlier/shorter version of the paper (only containing the RL part) was presented at [NeurIPS 2021 Deep RL Workshop](https://sites.google.com/view/deep-rl-workshop-neurips2021). The corresponding version is available on [Openreview](https://openreview.net/forum?id=lVUGfLpNpCF).
 
@@ -19,9 +19,15 @@ export TORCH_EXTENSIONS_DIR="/home/me/torch_extensions/rl"
 
 ## BibTex
 
-Coming soon.
-
-For the workshop version:
+```
+@article{irie2022modern,
+  title={A Modern Self-Referential Weight Matrix That Learns to Modify Itself},
+  author={Kazuki Irie and Imanol Schlag and R\'obert Csord\'as and J\"urgen Schmidhuber},
+  journal={Preprint arXiv:2202.05780},
+  year={2022}
+}
+```
+If for some reason the workshop version is needed:
 ```
 @inproceedings{irie2021modern,
       title={A Modern Self-Referential Weight Matrix That Learns to Modify Itself}, 
