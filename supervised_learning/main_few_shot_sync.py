@@ -407,6 +407,8 @@ train_timer = time.time()
 last_batch_logged = 0
 
 best_total_val_acc = 0.0
+best_valid_test_acc = 0.0
+best_test_acc = 0.0  # only for monitoring. should not be reported.
 
 num_seq = 0
 running_loss = 0.0
@@ -518,14 +520,19 @@ for ep in range(args.total_epoch):
             with torch.no_grad():
                 v_total = eval_model_label_sync(
                     model, val_dataloader, num_steps=args.valid_size)
+                test_total = eval_model_label_sync(
+                    model, test_dataloader, num_steps=args.test_size)
 
             loginf(
                 f"[val {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}] "
                 f'val total {100 * v_total :.2f} %, ')
 
+            loginf(f'test acc {100 * test_total :.2f} % ')  # debugging
+
             if use_wandb:
                 wandb.log({
                     "val_acc": 100 * v_total,
+                    "test_acc": 100 * test_total,  # debugging
                 })
 
             if v_total > best_total_val_acc:
@@ -538,6 +545,15 @@ for ep in range(args.total_epoch):
                             'optimizer_state_dict': optimizer.state_dict(),
                             'valid_acc': v_total}, best_model_path)
                 loginf("Saved.")
+                if test_total > best_valid_test_acc:
+                    best_valid_test_acc = test_total
+            if test_total > best_test_acc:
+                best_test_acc = test_total
+            loginf(
+                f'current best valid_acc {100 * best_total_val_acc :.2f} '
+                f'%\ncurrent best valid test_acc '
+                f'{100 * best_valid_test_acc :.2f} %\n'
+                f'(current best test_acc {100 * best_test_acc :.2f} %)')
             # Save the latest model
             torch.save({'train_step': i + offset_step,
                         'model_state_dict': model.state_dict(),
@@ -562,7 +578,7 @@ for ep in range(args.total_epoch):
 
 elapsed = time.time() - start_time
 loginf(f"Finished {i} steps in {elapsed / 60.:.2f} min.")
-loginf(f"Best one shot validation acc: {100 * best_total_val_acc:.2f} % "
+loginf(f"Best validation acc: {100 * best_total_val_acc:.2f} % "
        f"at step {best_step}")
 
 # load the best model and evaluate on the test set
