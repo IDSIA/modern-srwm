@@ -65,8 +65,12 @@ parser.add_argument('--ff_factor', default=4, type=int,
                     help='Transformer ff dim to hidden dim ratio.')
 parser.add_argument('--dropout', default=0.0, type=float,
                     help='dropout rate.')
+parser.add_argument('--input_dropout', default=0.0, type=float,
+                    help='input dropout rate.')
 parser.add_argument('--vision_dropout', default=0.0, type=float,
                     help='dropout rate in the vision feat extractor.')
+parser.add_argument('--dropout_type', type=str, default='base',
+                    choices=['base', 'inblock', '2d', '2d_inblock'])
 parser.add_argument('--use_big_res12', action='store_true',
                     help='use big Res-12.')
 parser.add_argument('--srwm_beta_init', default=0.0, type=float,
@@ -153,14 +157,15 @@ if args.use_wandb:  # configure wandb.
                          f"{model_name}-{args.name_dataset}//" \
                          f"seed{args.seed}//" \
                          f"noshuf{args.disable_eval_shuffling}/" \
+                         f"{args.dropout_type}/id{args.input_dropout}/" \
                          f"{args.test_per_class}-test_per_cl/" \
                          f"{args.n_way}way-{args.k_shot}shot/" \
                          f"L{args.num_layer}/h{args.hidden_size}/" \
                          f"n{args.n_head}/ff{args.ff_factor}/" \
                          f"d{args.dropout}/vd{args.vision_dropout}/" \
                          f"bigres{args.use_big_res12}/b{args.batch_size}/" \
-                         f"lr{args.learning_rate}/warm{args.use_warmup}" \
-                         f"warmstep{args.warmup_steps}" \
+                         f"lr{args.learning_rate}/warm{args.use_warmup}/" \
+                         f"warmstep{args.warmup_steps}/" \
                          f"g{args.grad_cummulate}/bias{args.srwm_beta_init}" \
                          f"softmax{args.use_input_softmax}" \
                          f"//PATH'{work_dir_key}'//"
@@ -189,6 +194,8 @@ if args.use_wandb:  # configure wandb.
     config.use_warmup = args.use_warmup
     config.warmup_steps = args.warmup_steps
     config.grad_cummulate = args.grad_cummulate
+    config.input_dropout = args.input_dropout
+    config.dropout_type = args.dropout_type
     config.report_every = args.report_every
     config.disable_eval_shuffling = args.disable_eval_shuffling
 else:
@@ -348,6 +355,8 @@ elif model_name == 'res12_lstm':
                            dropout=dropout_rate,
                            vision_dropout=vision_dropout,
                            use_big=args.use_big_res12,
+                           input_dropout=args.input_dropout,
+                           dropout_type=args.dropout_type,
                            num_classes=num_classes, imagenet=is_imagenet)
 elif model_name == 'res12_deltanet':
     # assert is_imagenet, 'Mainly for Imagenet'
@@ -357,6 +366,8 @@ elif model_name == 'res12_deltanet':
                             dropout=dropout_rate,
                             vision_dropout=vision_dropout,
                             use_big=args.use_big_res12,
+                            input_dropout=args.input_dropout,
+                            dropout_type=args.dropout_type,
                             num_classes=num_classes, imagenet=is_imagenet)
 elif model_name == 'res12_srwm':
     # assert is_imagenet, 'Mainly for Imagenet'
@@ -367,6 +378,8 @@ elif model_name == 'res12_srwm':
                            vision_dropout=vision_dropout,
                            use_big=args.use_big_res12,
                            use_ln=True, beta_init=args.srwm_beta_init,
+                           input_dropout=args.input_dropout,
+                           dropout_type=args.dropout_type,
                            use_input_softmax=args.use_input_softmax,
                            imagenet=is_imagenet)
 

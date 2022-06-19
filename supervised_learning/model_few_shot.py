@@ -273,10 +273,12 @@ class ConvSRWMModel(BaseModel):
 
 class Res12LSTMModel(BaseModel):
     def __init__(self, hidden_size, num_classes,
-                 num_layers, dropout, vision_dropout=0.0, use_big=False):
+                 num_layers, dropout, vision_dropout=0.0, use_big=False,
+                 input_dropout=0.0, dropout_type='base'):
         super(Res12LSTMModel, self).__init__()
 
-        self.stem_resnet12 = resnet12_base(vision_dropout, use_big)
+        self.stem_resnet12 = resnet12_base(
+            vision_dropout, use_big, dropout_type)
         self.input_channels = 3
         self.num_classes = num_classes
         if use_big:
@@ -284,6 +286,7 @@ class Res12LSTMModel(BaseModel):
         else:
             self.conv_feature_final_size = 256
 
+        self.input_drop = nn.Dropout(input_dropout)
         self.rnn = nn.LSTM(self.conv_feature_final_size + num_classes,
                            hidden_size, num_layers=num_layers,
                            dropout=dropout)
@@ -295,6 +298,7 @@ class Res12LSTMModel(BaseModel):
 
         slen, bsz, _, hs, ws = x.shape
         x = x.reshape(slen * bsz, self.input_channels, hs, ws)
+        x = self.input_drop(x)
 
         x = self.stem_resnet12(x)
 
@@ -311,10 +315,12 @@ class Res12LSTMModel(BaseModel):
 class Res12DeltaModel(BaseModel):
     def __init__(self, hidden_size, num_classes,
                  num_layers, num_head, dim_head, dim_ff,
-                 dropout, vision_dropout=0.0, use_big=False):
+                 dropout, vision_dropout=0.0, use_big=False,
+                 input_dropout=0.0, dropout_type='base'):
         super(Res12DeltaModel, self).__init__()
 
-        self.stem_resnet12 = resnet12_base(vision_dropout, use_big)
+        self.stem_resnet12 = resnet12_base(
+            vision_dropout, use_big, dropout_type)
         self.input_channels = 3
         self.num_classes = num_classes
         if use_big:
@@ -322,6 +328,7 @@ class Res12DeltaModel(BaseModel):
         else:
             self.conv_feature_final_size = 256
 
+        self.input_drop = nn.Dropout(input_dropout)
         self.input_proj = nn.Linear(
             self.conv_feature_final_size + num_classes, hidden_size)
 
@@ -341,6 +348,7 @@ class Res12DeltaModel(BaseModel):
 
         slen, bsz, _, hs, ws = x.shape
         x = x.reshape(slen * bsz, self.input_channels, hs, ws)
+        x = self.input_drop(x)
 
         x = self.stem_resnet12(x)
 
@@ -359,10 +367,11 @@ class Res12SRWMModel(BaseModel):
     def __init__(self, hidden_size, num_classes, num_layers, num_head,
                  dim_head, dim_ff, dropout, vision_dropout=0.0,
                  use_big=False, use_ln=True, use_input_softmax=False,
-                 beta_init=0.):
+                 input_dropout=0.0, dropout_type='base', beta_init=0.):
         super(Res12SRWMModel, self).__init__()
 
-        self.stem_resnet12 = resnet12_base(vision_dropout, use_big)
+        self.stem_resnet12 = resnet12_base(
+            vision_dropout, use_big, dropout_type)
         self.input_channels = 3
         self.num_classes = num_classes
         if use_big:
@@ -370,6 +379,7 @@ class Res12SRWMModel(BaseModel):
         else:
             self.conv_feature_final_size = 256
 
+        self.input_drop = nn.Dropout(input_dropout)
         self.input_proj = nn.Linear(
             self.conv_feature_final_size + num_classes, hidden_size)
 
@@ -390,6 +400,7 @@ class Res12SRWMModel(BaseModel):
 
         slen, bsz, _, hs, ws = x.shape
         x = x.reshape(slen * bsz, self.input_channels, hs, ws)
+        x = self.input_drop(x)
 
         x = self.stem_resnet12(x)
 
