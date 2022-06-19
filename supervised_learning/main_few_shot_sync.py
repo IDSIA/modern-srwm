@@ -357,7 +357,7 @@ elif model_name == 'res12_lstm':
                            use_big=args.use_big_res12,
                            input_dropout=args.input_dropout,
                            dropout_type=args.dropout_type,
-                           num_classes=num_classes, imagenet=is_imagenet)
+                           num_classes=num_classes)
 elif model_name == 'res12_deltanet':
     # assert is_imagenet, 'Mainly for Imagenet'
     loginf("Model: Resnet12 + Deltanet")
@@ -368,7 +368,7 @@ elif model_name == 'res12_deltanet':
                             use_big=args.use_big_res12,
                             input_dropout=args.input_dropout,
                             dropout_type=args.dropout_type,
-                            num_classes=num_classes, imagenet=is_imagenet)
+                            num_classes=num_classes)
 elif model_name == 'res12_srwm':
     # assert is_imagenet, 'Mainly for Imagenet'
     loginf("Model: Resnet12 + SRWM")
@@ -380,8 +380,7 @@ elif model_name == 'res12_srwm':
                            use_ln=True, beta_init=args.srwm_beta_init,
                            input_dropout=args.input_dropout,
                            dropout_type=args.dropout_type,
-                           use_input_softmax=args.use_input_softmax,
-                           imagenet=is_imagenet)
+                           use_input_softmax=args.use_input_softmax)
 
 loginf(f"Number of trainable params: {model.num_params()}")
 loginf(f"{model}")
