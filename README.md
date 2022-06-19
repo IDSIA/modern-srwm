@@ -2,7 +2,7 @@
 
 This is the official repository containing code for the paper:
 
-[A Modern Self-Referential Weight Matrix That Learns to Modify Itself](https://arxiv.org/abs/2202.05780)
+[A Modern Self-Referential Weight Matrix That Learns to Modify Itself (ICML 2022, NeurIPS 2021 Deep RL Workshop)](https://arxiv.org/abs/2202.05780)
 
 An earlier/shorter version of the paper (only containing the RL part) was presented at [NeurIPS 2021 Deep RL Workshop](https://sites.google.com/view/deep-rl-workshop-neurips2021). The corresponding version is available on [Openreview](https://openreview.net/forum?id=lVUGfLpNpCF).
 
@@ -20,10 +20,12 @@ export TORCH_EXTENSIONS_DIR="/home/me/torch_extensions/rl"
 ## BibTex
 
 ```
-@article{irie2022modern,
+@inproceedings{irie2022modern,
   title={A Modern Self-Referential Weight Matrix That Learns to Modify Itself},
   author={Kazuki Irie and Imanol Schlag and R\'obert Csord\'as and J\"urgen Schmidhuber},
-  journal={Preprint arXiv:2202.05780},
+  booktitle={Proc. Int. Conf. on Machine Learning (ICML)},
+  address={Baltimore, {MD}, {USA}},
+  month=jul,
   year={2022}
 }
 ```
