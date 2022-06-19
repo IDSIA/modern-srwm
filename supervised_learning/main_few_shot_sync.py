@@ -41,6 +41,9 @@ parser.add_argument('--model_type', type=str, default='lstm',
 parser.add_argument('--seed', default=1, type=int, help='Seed.')
 parser.add_argument('--valid_seed', default=0, type=int, help='Seed.')
 parser.add_argument('--test_seed', default=0, type=int, help='Seed.')
+parser.add_argument('--disable_eval_shuffling', action='store_true',
+                    help='disable shuffling of valid/test sets. Only useful '
+                         'to reproduce old/buggy behavior.')
 parser.add_argument('--fixed_valid', action='store_true',
                     help='use fixed validation set.')
 parser.add_argument('--fixed_test', action='store_true',
@@ -145,6 +148,7 @@ if args.use_wandb:  # configure wandb.
         wandb.run.name = f"{os.uname()[1]}//" \
                          f"{model_name}-{args.name_dataset}//" \
                          f"seed{args.seed}//" \
+                         f"noshuf{args.disable_eval_shuffling}/" \
                          f"{args.test_per_class}-test_per_cl/" \
                          f"{args.n_way}way-{args.k_shot}shot/" \
                          f"L{args.num_layer}/h{args.hidden_size}/" \
@@ -179,6 +183,7 @@ if args.use_wandb:  # configure wandb.
     config.learning_rate = args.learning_rate
     config.grad_cummulate = args.grad_cummulate
     config.report_every = args.report_every
+    config.disable_eval_shuffling = args.disable_eval_shuffling
 else:
     use_wandb = False
 # end wandb
@@ -200,6 +205,7 @@ random.seed(seed)
 valid_seed = args.valid_seed
 test_seed = args.test_seed
 loginf(f"Valid seed: {valid_seed}, Test seed: {test_seed}")
+shuffled_eval = not args.disable_eval_shuffling
 
 if torch.cuda.is_available():
     torch.cuda.manual_seed_all(seed)
@@ -242,7 +248,7 @@ dataloader = BatchMetaDataLoader(
 
 val_dataset = data_cls(args.data_dir, ways=n_way, shots=k_shot_train,
                        test_shots=test_per_class, meta_val=True,
-                       shuffle=False, seed=valid_seed)  # fixed validation set
+                       shuffle=shuffled_eval, seed=valid_seed)
 
 # this does not completely fix the valid set as the order of example is still
 # randomized.
@@ -266,7 +272,7 @@ val_dataloader = BatchMetaDataLoader(
 
 test_dataset = data_cls(args.data_dir, ways=n_way, shots=k_shot_train,
                         test_shots=test_per_class, meta_test=True,
-                        download=True, shuffle=False, seed=test_seed)
+                        download=True, shuffle=shuffled_eval, seed=test_seed)
 
 if args.fixed_test:
     # https://github.com/tristandeleu/pytorch-meta/issues/132

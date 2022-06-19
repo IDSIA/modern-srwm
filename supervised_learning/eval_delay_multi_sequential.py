@@ -41,7 +41,9 @@ parser.add_argument('--model_type', type=str, default='lstm',
 parser.add_argument('--seed', default=1, type=int, help='Seed.')
 parser.add_argument('--valid_seed', default=0, type=int, help='Seed.')
 parser.add_argument('--test_seed', default=0, type=int, help='Seed.')
-
+parser.add_argument('--disable_eval_shuffling', action='store_true',
+                    help='disable shuffling of valid/test sets. Only useful '
+                         'to reproduce old/buggy behavior.')
 # model hyper-parameters:
 parser.add_argument('--num_layer', default=1, type=int,
                     help='number of layers. for both LSTM and Trafo.')
@@ -143,6 +145,7 @@ random.seed(seed)
 valid_seed = args.valid_seed
 test_seed = args.test_seed
 loginf(f"Valid seed: {valid_seed}, Test seed: {test_seed}")
+shuffled_eval = not args.disable_eval_shuffling
 
 if torch.cuda.is_available():
     torch.cuda.manual_seed_all(seed)
@@ -168,7 +171,7 @@ omniglot_dataloader = BatchMetaDataLoader(
 
 omniglot_val_dataset = omniglot_rgb84x84_norm(
     args.data_dir, ways=n_way, shots=k_shot_train, test_shots=test_per_class,
-    meta_val=True, shuffle=False, seed=valid_seed)  # fixed validation set
+    meta_val=True, shuffle=shuffled_eval, seed=valid_seed)
 omniglot_val_dataloader = BatchMetaDataLoader(
     omniglot_val_dataset, batch_size=batch_size // 2,
     num_workers=args.num_worker, pin_memory=True)
@@ -183,7 +186,7 @@ imagenet_dataloader = BatchMetaDataLoader(
 
 imagenet_val_dataset = miniimagenet_norm(
     args.data_dir, ways=n_way, shots=k_shot_train, test_shots=test_per_class,
-    meta_val=True, shuffle=False, seed=valid_seed)  # fixed validation set
+    meta_val=True, shuffle=shuffled_eval, seed=valid_seed)
 imagenet_val_dataloader = BatchMetaDataLoader(
     imagenet_val_dataset, batch_size=batch_size // 2,
     num_workers=args.num_worker, pin_memory=True)
@@ -277,14 +280,14 @@ model.eval()
 
 omniglot_test_dataset = omniglot_rgb84x84_norm(
     args.data_dir, ways=n_way, shots=k_shot_train, test_shots=test_per_class,
-    meta_test=True, download=True, shuffle=False, seed=test_seed)
+    meta_test=True, download=True, shuffle=shuffled_eval, seed=test_seed)
 omniglot_test_dataloader = BatchMetaDataLoader(
     omniglot_test_dataset, batch_size=batch_size // 2,
     num_workers=args.num_worker, pin_memory=True)
 
 imagenet_test_dataset = miniimagenet_norm(
     args.data_dir, ways=n_way, shots=k_shot_train, test_shots=test_per_class,
-    meta_test=True, download=True, shuffle=False, seed=test_seed)
+    meta_test=True, download=True, shuffle=shuffled_eval, seed=test_seed)
 imagenet_test_dataloader = BatchMetaDataLoader(
     imagenet_test_dataset, batch_size=batch_size // 2,
     num_workers=args.num_worker, pin_memory=True)

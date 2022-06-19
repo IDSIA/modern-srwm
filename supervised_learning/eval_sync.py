@@ -45,6 +45,9 @@ parser.add_argument('--model_type', type=str, default='lstm',
 parser.add_argument('--seed', default=1, type=int, help='Seed.')
 parser.add_argument('--valid_seed', default=0, type=int, help='Seed.')
 parser.add_argument('--test_seed', default=0, type=int, help='Seed.')
+parser.add_argument('--disable_eval_shuffling', action='store_true',
+                    help='disable shuffling of valid/test sets. Only useful '
+                         'to reproduce old/buggy behavior.')
 parser.add_argument('--fixed_test', action='store_true',
                     help='use fixed test set.')
 parser.add_argument('--eval_on_valid', action='store_true',
@@ -146,6 +149,7 @@ random.seed(seed)
 valid_seed = args.valid_seed
 test_seed = args.test_seed
 loginf(f"Valid seed: {valid_seed}, Test seed: {test_seed}")
+shuffled_eval = not args.disable_eval_shuffling
 
 if torch.cuda.is_available():
     torch.cuda.manual_seed_all(seed)
@@ -183,11 +187,13 @@ else:
 if args.eval_on_valid:
     test_dataset = data_cls(args.data_dir, ways=n_way, shots=k_shot_train,
                             test_shots=test_per_class, meta_val=True,
-                            download=True, shuffle=False, seed=test_seed)
+                            download=True, shuffle=shuffled_eval,
+                            seed=test_seed)
 else:
     test_dataset = data_cls(args.data_dir, ways=n_way, shots=k_shot_train,
                             test_shots=test_per_class, meta_test=True,
-                            download=True, shuffle=False, seed=test_seed)
+                            download=True, shuffle=shuffled_eval,
+                            seed=test_seed)
 
 if args.fixed_test:
     # https://github.com/tristandeleu/pytorch-meta/issues/132
