@@ -13,6 +13,7 @@ import random
 
 import torch
 import torch.nn as nn
+from warmup_lr import WarmupWrapper
 from torchmeta_local.utils.data import BatchMetaDataLoader
 
 from model_few_shot import (
@@ -92,6 +93,9 @@ parser.add_argument('--batch_size', default=16, type=int,
                     help='batch size.')
 parser.add_argument('--learning_rate', default=1e-3, type=float,
                     help='batch size.')
+parser.add_argument('--warmup_steps', default=5000, type=int)
+parser.add_argument('--use_warmup', action='store_true',
+                    help='use warmup scheduling.')
 parser.add_argument('--grad_cummulate', default=1, type=int,
                     help='number of gradient accumulation steps.')
 parser.add_argument('--report_every', default=100, type=int,
@@ -155,7 +159,8 @@ if args.use_wandb:  # configure wandb.
                          f"n{args.n_head}/ff{args.ff_factor}/" \
                          f"d{args.dropout}/vd{args.vision_dropout}/" \
                          f"bigres{args.use_big_res12}/b{args.batch_size}/" \
-                         f"lr{args.learning_rate}/" \
+                         f"lr{args.learning_rate}/warm{args.use_warmup}" \
+                         f"warmstep{args.warmup_steps}" \
                          f"g{args.grad_cummulate}/bias{args.srwm_beta_init}" \
                          f"softmax{args.use_input_softmax}" \
                          f"//PATH'{work_dir_key}'//"
@@ -181,6 +186,8 @@ if args.use_wandb:  # configure wandb.
     config.use_big_res12 = args.use_big_res12
     config.batch_size = args.batch_size
     config.learning_rate = args.learning_rate
+    config.use_warmup = args.use_warmup
+    config.warmup_steps = args.warmup_steps
     config.grad_cummulate = args.grad_cummulate
     config.report_every = args.report_every
     config.disable_eval_shuffling = args.disable_eval_shuffling
@@ -382,7 +389,11 @@ loss_fn = nn.CrossEntropyLoss()
 
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate,
                              betas=(0.9, 0.995), eps=1e-9)
+loginf(f"{optimizer}")
 
+if args.use_warmup:
+    loginf("Using Warmup. Ignoring `learning_rate`.")
+    optimizer = WarmupWrapper(args.hidden_size, args.warmup_steps, optimizer)
 model.reset_grad()
 ############
 

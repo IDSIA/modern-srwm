@@ -92,6 +92,9 @@ parser.add_argument('--batch_size', default=16, type=int,
                     help='batch size.')
 parser.add_argument('--learning_rate', default=1e-3, type=float,
                     help='batch size.')
+parser.add_argument('--use_warmup', action='store_true',
+                    help='use warmup scheduling.')
+parser.add_argument('--warmup_steps', default=5000, type=int)
 parser.add_argument('--grad_cummulate', default=1, type=int,
                     help='number of gradient accumulation steps.')
 parser.add_argument('--report_every', default=100, type=int,
