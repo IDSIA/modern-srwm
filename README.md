@@ -6,6 +6,8 @@ This is the official repository containing code for the paper:
 
 An earlier/shorter version of the paper (only containing the RL part) was presented at [NeurIPS 2021 Deep RL Workshop](https://sites.google.com/view/deep-rl-workshop-neurips2021). The corresponding version is available on [Openreview](https://openreview.net/forum?id=lVUGfLpNpCF).
 
+This reposity also contains code for the paper: [Accelerating Neural Self-Improvement via Bootstrapping (ICLR 2023 Workshop)](https://openreview.net/forum?id=SDwUYcyOCyP). Example scripts for this paper can be found under [supervised_learning/scripts/bootstrapping](https://github.com/IDSIA/modern-srwm/tree/main/supervised_learning/scripts/bootstrapping).
+
 ## General instructions
 Please refer to the readme file under each directory for further instructions.
 
@@ -18,7 +20,7 @@ export TORCH_EXTENSIONS_DIR="/home/me/torch_extensions/rl"
 ```
 
 ## BibTex
-
+ICML 2022:
 ```
 @inproceedings{irie2022modern,
   title={A Modern Self-Referential Weight Matrix That Learns to Modify Itself},
@@ -29,14 +31,24 @@ export TORCH_EXTENSIONS_DIR="/home/me/torch_extensions/rl"
   year={2022}
 }
 ```
-Workshop version:
+NeurIPS 2021 Workshop:
 ```
 @inproceedings{irie2021modern,
-      title={A Modern Self-Referential Weight Matrix That Learns to Modify Itself}, 
-      author={Kazuki Irie and Imanol Schlag and R\'obert Csord\'as and J\"urgen Schmidhuber},
-      booktitle={Workshop on Deep Reinforcement Learning, NeurIPS},
-      address={Virtual only},
-      year={2021}
+  title={A Modern Self-Referential Weight Matrix That Learns to Modify Itself}, 
+  author={Kazuki Irie and Imanol Schlag and R\'obert Csord\'as and J\"urgen Schmidhuber},
+  booktitle={Workshop on Deep Reinforcement Learning, NeurIPS},
+  address={Virtual only},
+  year={2021}
+}
+```
+ICLR 2023 Workshop:
+```
+@inproceedings{irie2023accelerating,
+  title={Accelerating Neural Self-Improvement via Bootstrapping},
+  author={Kazuki Irie and J{\"u}rgen Schmidhuber},
+      booktitle={Workshop on Mathematical and Empirical Understanding of Foundation Models, ICLR},
+      address={Kigali, Rwanda},
+      year={2023}
 }
 ```
 
