@@ -16,7 +16,8 @@ from torchmeta_local.utils.data import BatchMetaDataLoader
 
 from model_few_shot import (
     ConvLSTMModel, ConvDeltaModel, ConvSRWMModel,
-    Res12LSTMModel, Res12DeltaModel, Res12SRWMModel)
+    Res12LSTMModel, Res12DeltaModel, Res12SRWMModel,
+    StatefulConvSRWMModel)
 from utils_few_shot import eval_model_label_sync
 
 
@@ -40,7 +41,8 @@ parser.add_argument('--load_from_checkpoint',
                     type=str, help='path from where to load model ckpt.')
 parser.add_argument('--model_type', type=str, default='lstm',
                     choices=['lstm', 'deltanet', 'srwm',
-                             'res12_lstm', 'res12_deltanet', 'res12_srwm'],
+                             'res12_lstm', 'res12_deltanet', 'res12_srwm',
+                             'stateful_srwm'],
                     help='model architecture')
 parser.add_argument('--seed', default=1, type=int, help='Seed.')
 parser.add_argument('--valid_seed', default=0, type=int, help='Seed.')
@@ -253,6 +255,15 @@ elif model_name == 'deltanet':
 elif model_name == 'srwm':
     loginf("Model: Self-Referential learning")
     model = ConvSRWMModel(hidden_size=hidden_size, num_layers=num_layer,
+                          num_head=n_head, dim_head=dim_head, dim_ff=dim_ff,
+                          dropout=dropout_rate, num_classes=num_classes,
+                          vision_dropout=vision_dropout,
+                          use_ln=True, beta_init=args.srwm_beta_init,
+                          use_input_softmax=args.use_input_softmax,
+                          imagenet=is_imagenet, fc100=is_fc100)
+elif model_name == 'stateful_srwm':
+    loginf("Model: Self-Referential learning")
+    model = StatefulConvSRWMModel(hidden_size=hidden_size, num_layers=num_layer,
                           num_head=n_head, dim_head=dim_head, dim_ff=dim_ff,
                           dropout=dropout_rate, num_classes=num_classes,
                           vision_dropout=vision_dropout,

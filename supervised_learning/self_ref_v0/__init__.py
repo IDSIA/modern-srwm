@@ -98,6 +98,95 @@ class SelfRefv0(torch.autograd.Function):
         grad_W_k = torch.zeros_like(W_k)
         grad_w_b = torch.zeros_like(w_b)
 
+
+        # Compute the gradients
+        SelfRefv0.dot_backward[x.device.type](
+            x,
+            q,
+            k,
+            beta,
+            y_diff,
+            q_diff,
+            k_diff,
+            beta_diff,
+            grad_out,
+            W_y,
+            W_q,
+            W_k,
+            w_b,
+            grad_x,
+            grad_W_y,
+            grad_W_q,
+            grad_W_k,
+            grad_w_b
+        )
+
+        return grad_x, grad_W_y, grad_W_q, grad_W_k, grad_w_b
+
+
+class StatefulSelfRefv0(torch.autograd.Function):
+
+    dot = {
+        "cuda": self_ref_fwd_cuda
+    }
+    dot_backward = {
+        "cuda": self_ref_bwd_cuda
+    }
+
+    @staticmethod
+    def forward(ctx, x, W_y, W_q, W_k, w_b):
+
+        # Shape of x: (B, len, D)
+        # Shape of W_q: (n_head, D, E) where n_head * E = D (typically)
+        device = x.device
+        N, H, L, E = x.shape
+
+        assert W_y.shape == (N, H, E, E), "Reshape/unsqueeze if needed."
+        assert W_q.shape == (N, H, E, E), "Reshape/unsqueeze if needed."
+        assert W_k.shape == (N, H, E, E), "Reshape/unsqueeze if needed."
+        assert w_b.shape == (N, H, E, 4), "Reshape/unsqueeze if needed."
+
+        out = torch.zeros((N, H, L, E), device=device, dtype=x.dtype)  # y
+
+        q_main = torch.zeros((N, H, L, E), device=device, dtype=x.dtype)
+        k_main = torch.zeros((N, H, L, E), device=device, dtype=x.dtype)
+        beta_main = torch.zeros((N, H, L, 4), device=device, dtype=x.dtype)
+
+        y_diff = torch.zeros((N, H, L, E), device=device, dtype=x.dtype)
+        q_diff = torch.zeros((N, H, L, E), device=device, dtype=x.dtype)
+        k_diff = torch.zeros((N, H, L, E), device=device, dtype=x.dtype)
+        beta_diff = torch.zeros((N, H, L, 4), device=device, dtype=x.dtype)
+
+        SelfRefv0.dot[device.type](
+            x,
+            W_y,
+            W_q,
+            W_k,
+            w_b,
+            q_main,
+            k_main,
+            beta_main,
+            y_diff,
+            q_diff,
+            k_diff,
+            beta_diff,
+            out
+        )
+
+        ctx.save_for_backward(
+            x, q_main, k_main, beta_main, y_diff, q_diff, k_diff, beta_diff,
+            W_y, W_q, W_k, w_b)
+        return out, W_y, W_q, W_k, w_b
+
+    @staticmethod
+    def backward(ctx, grad_out, grad_W_y, grad_W_q, grad_W_k, grad_w_b):
+        # Extract the saved tensors
+        (x, q, k, beta, y_diff, q_diff, k_diff, beta_diff,
+         W_y, W_q, W_k, w_b) = ctx.saved_tensors
+
+        # Allocate memory for the gradients
+        grad_x = torch.zeros_like(x)
+
         # Compute the gradients
         SelfRefv0.dot_backward[x.device.type](
             x,
@@ -125,7 +214,7 @@ class SelfRefv0(torch.autograd.Function):
 
 # Alias the autograd functions to python style snake case naming
 self_ref_v0 = SelfRefv0.apply
-
+stateful_self_ref_v0 = StatefulSelfRefv0.apply
 
 if __name__ == '__main__':
     import torch

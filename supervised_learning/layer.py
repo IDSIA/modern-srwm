@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from fast_weight import fast_weight_delta
-from self_ref_v0 import self_ref_v0
+from self_ref_v0 import self_ref_v0, stateful_self_ref_v0
 
 
 @torch.jit.script
@@ -111,7 +111,7 @@ class FastFFlayer(nn.Module):
 # self referential weight matrix layer
 class SRWMlayer(nn.Module):
     def __init__(self, num_head, dim_head, in_dim, dropout, use_ln=True,
-                 use_input_softmax=False, beta_init=-1.0):
+                 use_input_softmax=False, beta_init=-1.0, stateful=False):
         super(SRWMlayer, self).__init__()
 
         self.num_head = num_head
@@ -120,7 +120,11 @@ class SRWMlayer(nn.Module):
         self.use_ln = use_ln
         self.use_input_softmax = use_input_softmax
 
-        self.sr_layer = self_ref_v0
+        self.stateful = stateful
+        if stateful:
+            self.sr_layer = stateful_self_ref_v0
+        else:
+            self.sr_layer = self_ref_v0
         n_head = num_head
         d_head = dim_head
 
@@ -172,7 +176,10 @@ class SRWMlayer(nn.Module):
             W_k_bc = self.W_k.repeat(bsz, 1, 1, 1)
             w_b_bc = self.w_b.repeat(bsz, 1, 1, 1)
 
-        out = self.sr_layer(x, W_y_bc, W_q_bc, W_k_bc, w_b_bc)
+        if self.stateful:
+            out, W_y_bc, W_q_bc, W_k_bc, w_b_bc = self.sr_layer(x, W_y_bc, W_q_bc, W_k_bc, w_b_bc)
+        else:
+            out = self.sr_layer(x, W_y_bc, W_q_bc, W_k_bc, w_b_bc)
 
         out = out.transpose(1, 2)
         out = out.reshape(bsz, slen, self.num_head * self.dim_head)
@@ -191,14 +198,12 @@ class SRWMlayer(nn.Module):
         # compute the new shift (not very efficient; get it better from kernel)
         # if state is not None and get_state:
         if get_state:
-            W_y_bc = W_y_bc.detach() - self.W_y.repeat(bsz, 1, 1, 1)
-            W_q_bc = W_q_bc.detach() - self.W_q.repeat(bsz, 1, 1, 1)
-            W_k_bc = W_k_bc.detach() - self.W_k.repeat(bsz, 1, 1, 1)
-            w_b_bc = w_b_bc.detach() - self.w_b.repeat(bsz, 1, 1, 1)
+            W_y_bc = W_y_bc - self.W_y.repeat(bsz, 1, 1, 1)
+            W_q_bc = W_q_bc - self.W_q.repeat(bsz, 1, 1, 1)
+            W_k_bc = W_k_bc - self.W_k.repeat(bsz, 1, 1, 1)
+            w_b_bc = w_b_bc - self.w_b.repeat(bsz, 1, 1, 1)
 
-            state = (
-                W_y_bc.detach(), W_q_bc.detach(), W_k_bc.detach(),
-                w_b_bc.detach())
+            state = (W_y_bc, W_q_bc, W_k_bc, w_b_bc)
 
             return out, state
 

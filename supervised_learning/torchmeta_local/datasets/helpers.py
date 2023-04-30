@@ -26,7 +26,7 @@ __all__ = [
 
 
 def helper_with_default(klass, folder, shots, ways, shuffle=True,
-                        test_shots=None, seed=None, defaults={}, **kwargs):
+                        test_shots=None, seed=None, defaults={}, num_samples_per_class=None, **kwargs):
     if 'num_classes_per_task' in kwargs:
         warnings.warn('Both arguments `ways` and `num_classes_per_task` were '
             'set in the helper function for the number of classes per task. '
@@ -42,8 +42,13 @@ def helper_with_default(klass, folder, shots, ways, shuffle=True,
     if test_shots is None:
         test_shots = shots
     dataset = klass(folder, num_classes_per_task=ways, **kwargs)
-    dataset = ClassSplitter(dataset, shuffle=shuffle,
-        num_train_per_class=shots, num_test_per_class=test_shots)
+    if num_samples_per_class is not None:
+        dataset = ClassSplitter(
+            dataset, shuffle=shuffle,
+            num_samples_per_class=num_samples_per_class)
+    else:
+        dataset = ClassSplitter(dataset, shuffle=shuffle,
+            num_train_per_class=shots, num_test_per_class=test_shots)
     dataset.seed(seed)
 
     return dataset

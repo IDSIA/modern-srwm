@@ -271,6 +271,165 @@ class ConvSRWMModel(BaseModel):
         return out, None
 
 
+# For bootstrapped training
+class StatefulConvSRWMModel(BaseModel):
+    def __init__(self, hidden_size, num_classes,
+                 num_layers, num_head, dim_head, dim_ff,
+                 dropout, vision_dropout=0.0, emb_dim=10, use_ln=True,
+                 use_input_softmax=False,
+                 beta_init=0., imagenet=False, fc100=False, bn_momentum=0.1, 
+                 input_dropout=0.0, dropout_type='base'):
+        super().__init__()
+
+        num_conv_blocks = 4
+        if imagenet:  # mini-imagenet
+            input_channels = 3
+            out_num_channel = 32
+            self.conv_feature_final_size = 32 * 5 * 5  # (B, 32, 5, 5)
+        elif fc100:
+            input_channels = 3
+            out_num_channel = 32
+            self.conv_feature_final_size = 32 * 2 * 2  # (B, 32, 5, 5)
+        else:  # onmiglot
+            input_channels = 1
+            out_num_channel = 64
+            self.conv_feature_final_size = 64  # final feat shape (B, 64, 1, 1)
+
+        self.input_channels = input_channels
+        self.num_classes = num_classes
+        list_conv_layers = []
+
+        for _ in range(num_conv_blocks):
+            conv_block = []
+            conv_block.append(
+                nn.Conv2d(
+                    in_channels=input_channels,
+                    out_channels=out_num_channel,
+                    kernel_size=3,
+                    stride=1,
+                    padding=1,
+                )
+            )
+            conv_block.append(nn.BatchNorm2d(
+                out_num_channel, momentum=bn_momentum))
+            conv_block.append(nn.MaxPool2d(kernel_size=2, stride=2, padding=0))
+            if '2d' in dropout_type:
+                conv_block.append(nn.Dropout2d(vision_dropout))
+            else:
+                conv_block.append(nn.Dropout(vision_dropout))
+            conv_block.append(nn.ReLU(inplace=True))
+            list_conv_layers.append(nn.Sequential(*conv_block))
+            input_channels = out_num_channel
+
+        self.conv_layers = nn.ModuleList(list_conv_layers)
+
+        self.input_proj = nn.Linear(
+            self.conv_feature_final_size + num_classes, hidden_size)
+
+        # self.input_layer_norm = nn.LayerNorm(self.conv_feature_final_size)
+
+        fw_layers = []
+        ff_layers = []
+        self.num_layers = num_layers
+
+        for _ in range(num_layers):  # each "layer" consists of two sub-layers
+            fw_layers.append(
+                SRWMlayer(num_head, dim_head, hidden_size, dropout, use_ln,
+                          use_input_softmax, beta_init, stateful=True))
+            ff_layers.append(
+                TransformerFFlayers(dim_ff, hidden_size, dropout))
+
+        self.fw_layers = nn.ModuleList(fw_layers)
+        self.ff_layers = nn.ModuleList(ff_layers)
+
+        self.activation = nn.ReLU(inplace=True)
+        self.out_layer = nn.Linear(hidden_size, num_classes)
+        if dropout_type == 'base':
+            self.input_drop = nn.Dropout(input_dropout)
+        else:
+            self.input_drop = nn.Dropout2d(input_dropout)
+
+    # return clone of input state
+    def clone_state(self, state):
+        Wy_states, Wq_states, Wk_states, wb_states = state
+
+        Wy_state_list = []
+        Wq_state_list = []
+        Wk_state_list = []
+        wb_state_list = []
+
+        for i in range(self.num_layers):
+            Wy_state_list.append(Wy_states[i].clone())
+            Wq_state_list.append(Wq_states[i].clone())
+            Wk_state_list.append(Wk_states[i].clone())
+            wb_state_list.append(wb_states[i].clone())
+
+        Wy_state_tuple = tuple(Wy_state_list)
+        Wq_state_tuple = tuple(Wq_state_list)
+        Wk_state_tuple = tuple(Wk_state_list)
+        wb_state_tuple = tuple(wb_state_list)
+
+        state_tuple = (
+            Wy_state_tuple, Wq_state_tuple, Wk_state_tuple, wb_state_tuple)
+
+        return state_tuple
+
+    def forward(self, x, fb, state=None):
+        # Assume input of shape (len, B, 1, 28, 28)
+
+        slen, bsz, _, hs, ws = x.shape
+        x = x.reshape(slen * bsz, self.input_channels, hs, ws)
+
+        x = self.input_drop(x)
+
+        for conv_layer in self.conv_layers:
+            x = conv_layer(x)
+
+        x = x.reshape(slen, bsz, self.conv_feature_final_size)
+        emb = torch.nn.functional.one_hot(fb, num_classes=self.num_classes)
+        out = torch.cat([x, emb], dim=-1)
+
+        out = self.input_proj(out)
+
+        # forward main layers
+        Wy_state_list = []
+        Wq_state_list = []
+        Wk_state_list = []
+        wb_state_list = []
+
+        if state is not None:
+            Wy_states, Wq_states, Wk_states, wb_states = state
+
+        for i in range(self.num_layers):
+            if state is not None:
+                out, out_state = self.fw_layers[i](
+                    out,
+                    state=(Wy_states[i].squeeze(0), Wq_states[i].squeeze(0),
+                           Wk_states[i].squeeze(0), wb_states[i].squeeze(0)),
+                    get_state=True)
+            else:
+                out, out_state = self.fw_layers[i](
+                    out,
+                    get_state=True)
+            # no cloning here. We do it outside where needed
+            Wy_state_list.append(out_state[0].unsqueeze(0))
+            Wq_state_list.append(out_state[1].unsqueeze(0))
+            Wk_state_list.append(out_state[2].unsqueeze(0))
+            wb_state_list.append(out_state[3].unsqueeze(0))
+            out = self.ff_layers[i](out)
+
+        out = self.out_layer(out)
+
+        Wy_state_tuple = tuple(Wy_state_list)
+        Wq_state_tuple = tuple(Wq_state_list)
+        Wk_state_tuple = tuple(Wk_state_list)
+        wb_state_tuple = tuple(wb_state_list)
+
+        state_tuple = (
+            Wy_state_tuple, Wq_state_tuple, Wk_state_tuple, wb_state_tuple)
+
+        return out, state_tuple
+
 class Res12LSTMModel(BaseModel):
     def __init__(self, hidden_size, num_classes,
                  num_layers, dropout, vision_dropout=0.0, use_big=False,
