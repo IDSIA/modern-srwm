@@ -33,7 +33,8 @@ parser.add_argument('--data_dir', type=str,
 parser.add_argument('--name_dataset', type=str, default='omniglot',
                     choices=['omniglot', 'miniimagenet', 'omniglot_rgb84x84',
                              'omniglot_rgb84x84_norm', 'omniglot_norm',
-                             'miniimagenet_norm', 'fc100', 'fc100_norm'])
+                             'miniimagenet_norm', 'tieredimagenet',
+                             'fc100', 'fc100_norm'])
 parser.add_argument('--num_worker', default=12, type=int,
                     help='for dataloader.')
 parser.add_argument('--work_dir', default='save_models', type=str,
@@ -266,6 +267,8 @@ elif args.name_dataset == 'omniglot_norm':
     from torchmeta_local.datasets.helpers import omniglot_norm as data_cls
 elif args.name_dataset == 'miniimagenet':
     from torchmeta_local.datasets.helpers import miniimagenet as data_cls
+elif args.name_dataset == 'tieredimagenet':
+    from torchmeta_local.datasets.helpers import tieredimagenet as data_cls
 elif args.name_dataset == 'miniimagenet_norm':  # mean/std normalized
     from torchmeta_local.datasets.helpers import (
         miniimagenet_norm as data_cls)
