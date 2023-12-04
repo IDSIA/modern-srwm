@@ -8,6 +8,8 @@ An earlier/shorter version of the paper (only containing the RL part) was presen
 
 This reposity also contains code for the paper: [Accelerating Neural Self-Improvement via Bootstrapping (ICLR 2023 Workshop)](https://openreview.net/forum?id=SDwUYcyOCyP). Example scripts for this paper can be found under [supervised_learning/scripts/bootstrapping](https://github.com/IDSIA/modern-srwm/tree/main/supervised_learning/scripts/bootstrapping).
 
+**Note(November 2023): We have a followup work on self-referential weight matrices (+ continual learning), [IDSIA/automated-cl](https://github.com/IDSIA/automated-cl/tree/main)**
+
 ## General instructions
 Please refer to the readme file under each directory for further instructions.
 
